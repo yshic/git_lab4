@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "software_timer.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,7 +62,13 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+uint8_t temp = 0;
+void HAL_UART_RxCpltCallback ( UART_HandleTypeDef * huart ){
+	if(huart -> Instance == USART2 ){
+		HAL_UART_Transmit (& huart2 , &temp , 1, 50);
+		HAL_UART_Receive_IT (& huart2 , &temp , 1);
+	}
+}
 /* USER CODE END 0 */
 
 /**
@@ -97,7 +103,8 @@ int main(void)
   MX_TIM2_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  HAL_TIM_Base_Start_IT(&htim2);
+  HAL_UART_Receive_IT (& huart2 , &temp , 1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -308,7 +315,9 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+	timerRun(0);
+}
 /* USER CODE END 4 */
 
 /**
