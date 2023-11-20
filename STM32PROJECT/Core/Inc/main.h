@@ -61,7 +61,8 @@ void Error_Handler(void);
 #define LED_YELLOW_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
-
+extern ADC_HandleTypeDef hadc1;
+extern UART_HandleTypeDef huart2;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

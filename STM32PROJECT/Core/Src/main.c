@@ -22,6 +22,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "software_timer.h"
+#include "fsm.h"
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,11 +64,13 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t temp = 0;
-void HAL_UART_RxCpltCallback ( UART_HandleTypeDef * huart ){
-	if(huart -> Instance == USART2 ){
-		HAL_UART_Transmit (& huart2 , &temp , 1, 50);
-		HAL_UART_Receive_IT (& huart2 , &temp , 1);
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
+	if(huart -> Instance == USART2){
+		HAL_UART_Transmit (&huart2 , &temp, 1, 50);
+		buffer[index_buffer++] = temp;
+		if(index_buffer == MAX_BUFFER_SIZE) index_buffer = 0;
+		buffer_flag = 1;
+		HAL_UART_Receive_IT (&huart2 , &temp, 1);
 	}
 }
 /* USER CODE END 0 */
@@ -104,15 +108,20 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim2);
-  HAL_UART_Receive_IT (& huart2 , &temp , 1);
+  HAL_UART_Receive_IT (&huart2 , &temp, 1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  setTimer(1000, 0);
   while (1)
   {
     /* USER CODE END WHILE */
-
+	  if(buffer_flag == 1){
+		  command_parser_fsm();
+		  buffer_flag = 0;
+	  }
+	  uart_communication_fsm();
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
