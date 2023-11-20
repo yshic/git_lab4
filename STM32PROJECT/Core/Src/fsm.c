@@ -14,33 +14,48 @@ uint8_t buffer_flag = 0;
 uint8_t buffer[MAX_BUFFER_SIZE];
 uint32_t ADC_value = 0;
 char str[100];
+int cmd = 0;
 
-void clear_buffer(){
-	memset(buffer,0,sizeof(buffer));
-	index_buffer=0;
+void clearBuffer(){
+	memset(buffer, 0, sizeof(buffer));
+	index_buffer = 0;
 }
-
+int compare(){
+	if(buffer[index_buffer - 4] == 'R' && buffer[index_buffer - 3] == 'S' && buffer[index_buffer - 2] == 'T'){
+		return RST;
+	}
+	else if(buffer[index_buffer - 3] == 'O' && buffer[index_buffer - 2] == 'K'){
+		return OK;
+	}
+	return 0;
+}
 void command_parser_fsm(){
 	switch(status){
 	case INIT:
-		if(temp == '!'){
+		if(buffer[index_buffer - 1] == '!'){
 			status = RECEIVE;
-			clear_buffer();
 		}
+		break;
 	case RECEIVE:
-		if(strcmp(buffer, "RST#") == 0){
-			command_flag = 1;
-			HAL_ADC_Start(&hadc1);
-			ADC_value = HAL_ADC_GetValue(&hadc1);
-			HAL_ADC_Stop(&hadc1);
-			status = INIT;
-			clear_buffer();
-		}
-		else if(strcmp(buffer, "OK#") == 0){
-			command_flag = 0;
-			status = INIT;
-			timer_flag[0] = 1;
-			clear_buffer();
+		if(buffer[index_buffer - 1] == '#'){
+			cmd = compare();
+			if(cmd == RST){
+				command_flag = 1;
+				HAL_ADC_Start(&hadc1);
+				ADC_value = HAL_ADC_GetValue(&hadc1);
+				HAL_ADC_Stop(&hadc1);
+				status = INIT;
+				clearBuffer();
+				break;
+			}
+			else if(cmd == OK){
+				command_flag = 0;
+				status = INIT;
+				timer_flag[0] = 1;
+				HAL_GPIO_WritePin(LED_YELLOW_GPIO_Port, LED_YELLOW_Pin, GPIO_PIN_SET);
+				clearBuffer();
+				break;
+			}
 		}
 		break;
 	default:

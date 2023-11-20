@@ -13,8 +13,10 @@
 #include <stdio.h>
 #include "string.h"
 
-#define INIT 1
-#define RECEIVE 2
+#define INIT 		0
+#define RECEIVE 	1
+#define RST			3
+#define OK			4
 
 #define MAX_BUFFER_SIZE 30
 
@@ -25,8 +27,10 @@ extern uint8_t buffer_flag;
 extern uint32_t ADC_value;
 extern int command_flag;
 extern int status;
+extern int cmd;
 
-void clear_buffer();
+void clearBuffer();
+int compare();
 void command_parser_fsm();
 void uart_communication_fsm();
 
